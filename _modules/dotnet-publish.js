@@ -37,16 +37,23 @@ const dotnetPublish = {
         }
 
         echo.message(`Cleaning release directory '${absoluteOutputDir}'...`);
-        shell.rm("-rf", absoluteOutputDir);
+
+        const rmExecResult = shell.rm("-rf", absoluteOutputDir);
+        if (rmExecResult.code !== 0) {
+            echo.error("Failed to delete output directory");
+            shell.exit(rmExecResult.code);
+        }
+
         echo.success(" - Successfully cleaned released directory");
         echo.newLine();
 
         dir.pushd(dotnetPath.solutionDir());
         echo.message(`Publishing dotnet solution (via ${this.cmd(absoluteOutputDir)})...`);
 
-        if (shell.exec(this.cmd(absoluteOutputDir)).code !== 0) {
+        const execResult = shell.exec(this.cmd(absoluteOutputDir))
+        if (execResult.code !== 0) {
             echo.error("Failed to publish dotnet project");
-            shell.exit(1);
+            shell.exit(execResult.code);
         }
 
         echo.success(" - Dotnet solution published")
